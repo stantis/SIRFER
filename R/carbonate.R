@@ -10,6 +10,9 @@ d = d[d$Method != "CO2 On Off",]
 #re-register run sequece #s
 d$Row = d$Row - min(d$Row) + 1
 
+#remove conditioners
+d = d[d$`Identifier 1` != "COND",]
+
 #check for the right # of peaks
 for(i in unique(d$Row)){
   r = max(d$`Peak Nr`[d$Row == i])

@@ -2,7 +2,11 @@ library(readxl)
 library(openxlsx)
 source("R/helpers.R")
 
-d = read_xls("data/220510_COND.xls")
+fn = "220622_22-123.xls"
+
+d = read_xls(file.path("data", fn), 
+             col_types = c("numeric", "text", "numeric", "text",
+                           rep("guess", 15)))
 
 #remove on-off
 d = d[d$Method != "CO2 On Off",]
@@ -28,6 +32,7 @@ for(i in unique(d$Row)){
   d$Outliler[d$Row == i] = dout(d[d$Row == i,])
 }
 d.no = d[!d$Outliler,]
+d.no = d[!is.na(d$Outliler),]
 
 #calculate stats per sample
 l = length(unique(d.no$Row))
@@ -43,17 +48,21 @@ d.sam = data.frame(
   "d18O.sd" = numeric(l),
   "Ignore" = rep(FALSE)
 )
-for(i in d.sam$Row){
-  d.sam$Identifier_1[i] = d.no$`Identifier 1`[match(i, d.no$Row)]
-  d.sam$Weight[i] = d.no$`Identifier 2`[match(i, d.no$Row)]
+for(i in seq_along(d.sam$Row)){
+  d.sam$Identifier_1[i] = d.no$`Identifier 1`[match(d.sam$Row[i], 
+                                                    d.no$Row)]
+  d.sam$Weight[i] = d.no$`Identifier 2`[match(d.sam$Row[i], 
+                                              d.no$Row)]
   #areas include outliers for standardization over all peaks
-  d.sam$Area.max[i] = max(d$`Area All`[d$Row == i])
-  d.sam$Area.sd[i] = sd(d$`Area All`[d$Row == i])
+  d.sam$Area.max[i] = max(d$`Area All`[d$Row == d.sam$Row[i]])
+  d.sam$Area.sd[i] = sd(d$`Area All`[d$Row == d.sam$Row[i]])
   #isotopes exclude outliers
-  d.sam$d13C.mean[i] = mean(d.no$`d 13C/12C`[d.no$Row == i])
-  d.sam$d13C.sd[i] = sd(d.no$`d 13C/12C`[d.no$Row == i])
-  d.sam$d18O.mean[i] = mean(d.no$`d 18O/16O`[d.no$Row == i])
-  d.sam$d18O.sd[i] = sd(d.no$`d 18O/16O`[d.no$Row == i])
+  d.sam$d13C.mean[i] = mean(d.no$`d 13C/12C`[d.no$Row == 
+                                               d.sam$Row[i]])
+  d.sam$d13C.sd[i] = sd(d.no$`d 13C/12C`[d.no$Row == d.sam$Row[i]])
+  d.sam$d18O.mean[i] = mean(d.no$`d 18O/16O`[d.no$Row == 
+                                               d.sam$Row[i]])
+  d.sam$d18O.sd[i] = sd(d.no$`d 18O/16O`[d.no$Row == d.sam$Row[i]])
 }
 
 #screen for high SDs
@@ -62,7 +71,8 @@ d.good = d.sam[!d.sam$Ignore,]
 
 #some values to use
 plrm1 = list("ID" = "CARRARA", "d13C" = 2.1, "d18O" = -1.8, "pCO3" = 0.6)
-plrm2 = list("ID" = "LSVEC", "d13C" = -46.6, "d18O" = -26.7, "pCO3" = 0.6)
+#plrm2 = list("ID" = "LSVEC", "d13C" = -46.6, "d18O" = -26.7, "pCO3" = 0.6)
+plrm2 = list("ID" = "CO8", "d13C" = -5.764, "d18O" = -22.7, "pCO3" = 0.6)
 slrm = list("ID" = "MARBLE", "d13C" = 1.9, "d18O" = -11.3, "pCO3" = 0.6)
 
 #drift correction
@@ -70,8 +80,14 @@ slrm = list("ID" = "MARBLE", "d13C" = 1.9, "d18O" = -11.3, "pCO3" = 0.6)
 dfit = drift(d.good, plrm1, plrm2, slrm)
 
 ##apply the drift correction 
-d.good$d13C.dc = d.good$d13C.mean - predict(dfit[[1]], d.good$Row)$y
-d.good$d18O.dc = d.good$d18O.mean - predict(dfit[[2]], d.good$Row)$y
+cd = FALSE
+if(cd){
+  d.good$d13C.dc = d.good$d13C.mean - predict(dfit[[1]], d.good$Row)$y
+  d.good$d18O.dc = d.good$d18O.mean - predict(dfit[[2]], d.good$Row)$y
+} else{
+  d.good$d13C.dc = d.good$d13C.mean
+  d.good$d18O.dc = d.good$d18O.mean
+}
 
 #calibration
 ##calibration fit
@@ -164,4 +180,4 @@ addStyle(wb, "Raw", int, rows = 1:100, cols = c(1, 6, 7),
          gridExpand = TRUE)
 
 ##save it
-saveWorkbook(wb, "out/testing.xlsx", overwrite = TRUE)
+saveWorkbook(wb, file.path("out", paste0(fn, "x")), overwrite = TRUE)

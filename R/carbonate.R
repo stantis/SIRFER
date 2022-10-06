@@ -2,7 +2,7 @@ library(readxl)
 library(openxlsx)
 source("R/helpers.R")
 
-fn = "220920_22-243.xls"
+fn = "211110_21-250.xls"
 
 d = read_xls(file.path("data", fn), 
              col_types = c("numeric", "text", "numeric", "text",
@@ -32,7 +32,7 @@ for(i in unique(d$Row)){
   d$Outliler[d$Row == i] = dout(d[d$Row == i,])
 }
 d.no = d[!d$Outliler,]
-d.no = d[!is.na(d$Outliler),]
+d.no = d.no[!is.na(d.no$Outliler),]
 
 #calculate stats per sample
 l = length(unique(d.no$Row))
@@ -80,7 +80,7 @@ slrm = list("ID" = "MARBLE", "d13C" = 1.9, "d18O" = -11.3, "pCO3" = 0.6)
 dfit = drift(d.good, plrm1, plrm2, slrm)
 
 ##apply the drift correction 
-cd = TRUE
+cd = FALSE
 if(cd){
   d.good$d13C.dc = d.good$d13C.mean - predict(dfit[[1]], d.good$Row)$y
   d.good$d18O.dc = d.good$d18O.mean - predict(dfit[[2]], d.good$Row)$y

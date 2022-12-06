@@ -50,6 +50,9 @@ drift = function(d.good, plrm1, plrm2, slrm){
        xlab = "Sequence #", ylab = expression(delta^{13}*"C offset"))
   points(dl[[2]]$Row, dl[[2]]$d13C.off, bg = 2, pch = 21)
   points(sl$Row, sl$d13C.off, col = 3)
+  text(dl[[1]]$Row, dl[[1]]$d13C.off, dl[[1]]$Row)
+  text(dl[[2]]$Row, dl[[2]]$d13C.off, dl[[2]]$Row, col = 2)
+  text(sl$Row, sl$d13C.off, sl$Row, col = 3)
 
   #spline fit
   ssc = smooth.spline(r.all, c.all, df = floor(length(r.all)/3))
@@ -63,6 +66,9 @@ drift = function(d.good, plrm1, plrm2, slrm){
        xlab = "Sequence #", ylab = expression(delta^{18}*"O offset"))
   points(dl[[2]]$Row, dl[[2]]$d18O.off, bg = 2, pch = 21)
   points(sl$Row, sl$d18O.off, col = 3)
+  text(dl[[1]]$Row, dl[[1]]$d18O.off, dl[[1]]$Row)
+  text(dl[[2]]$Row, dl[[2]]$d18O.off, dl[[2]]$Row, col = 2)
+  text(sl$Row, sl$d18O.off, sl$Row, col = 3)
   
   #spline fit
   sso = smooth.spline(r.all, o.all, df = floor(length(r.all)/3))

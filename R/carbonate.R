@@ -2,7 +2,7 @@ library(readxl)
 library(openxlsx)
 source("R/helpers.R")
 
-fn = "211110_21-250.xls"
+fn = "221104_22-279.xls"
 
 d = read_xls(file.path("data", fn), 
              col_types = c("numeric", "text", "numeric", "text",
@@ -73,14 +73,14 @@ d.good = d.sam[!d.sam$Ignore,]
 plrm1 = list("ID" = "CARRARA", "d13C" = 2.1, "d18O" = -1.8, "pCO3" = 0.6)
 plrm2 = list("ID" = "LSVEC", "d13C" = -46.6, "d18O" = -26.7, "pCO3" = 0.6)
 #plrm2 = list("ID" = "CO8", "d13C" = -5.764, "d18O" = -22.7, "pCO3" = 0.6)
-slrm = list("ID" = "MARBLE", "d13C" = 1.9, "d18O" = -11.3, "pCO3" = 0.6)
+slrm = list("ID" = "MAR", "d13C" = 1.9, "d18O" = -11.3, "pCO3" = 0.6)
 
 #drift correction
 ##fits and plots the spine
 dfit = drift(d.good, plrm1, plrm2, slrm)
 
 ##apply the drift correction 
-cd = FALSE
+cd = TRUE
 if(cd){
   d.good$d13C.dc = d.good$d13C.mean - predict(dfit[[1]], d.good$Row)$y
   d.good$d18O.dc = d.good$d18O.mean - predict(dfit[[2]], d.good$Row)$y

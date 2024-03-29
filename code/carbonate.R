@@ -1,6 +1,5 @@
 library(readxl); library(openxlsx); library(stringr); library(dplyr); library(tidyr)
 
-
 # Setting up functions ----------------------------------------------------
 
 ##outlier function
@@ -180,17 +179,16 @@ cal = function(dl, plrm1, plrm2, slrm){
 
 # Cleaning raw data -------------------------------------------------------
 
-path <- file.path(getwd(), 'data')
+path <- file.path(getwd(), 'input')
 files <- list.files(path, full.names = F)
 
 for (file in files) {
-  d =  read_excel(paste0('data/',file), 
+  d =  read_excel(paste0('input/',file), 
                   col_types = c("numeric", "text", "numeric", 
                                 "text", "numeric", "numeric", "numeric", 
                                 "numeric", "numeric", "text", "text", 
                                 "text", "numeric", "numeric", "numeric", 
-                                "numeric", "numeric", "text", "text", 
-                                "skip", "skip", "skip"))
+                                "numeric", "numeric", "text", "text"))
   
   #remove on-off
   d = d[d$Method != "CO2 On Off",]
@@ -364,18 +362,18 @@ for (file in files) {
            gridExpand = TRUE)
   
   ##save it
-  saveWorkbook(wb, file.path("out", paste0(file, "")), overwrite = TRUE)
+  saveWorkbook(wb, file.path("xlsxOutput", paste0(file, "")), overwrite = TRUE)
   
 }
 
 # Cleaning Output ---------------------------------------------------------
 
-path <- file.path(getwd(), 'out')
+path <- file.path(getwd(), 'xlsxOutput')
 files <- list.files(path, full.names = F)
 
 df <- data.frame() 
 for (file in files) {
-  r <- read_excel(paste0('out/',file))
+  r <- read_excel(paste0('xlsxOutput/',file))
   r$batch_id <- basename(file)
   df <- rbind(df, r)
 }
@@ -393,6 +391,6 @@ df <-  df %>%
          sample_id = Identifier_1, 
          area_max = Area.max) %>% 
   select(-c(Row)) %>% 
-  filter(str_detect(sample_id, "LAR|FIND-EM")) #get rid of other samples run in batches
+  filter(str_detect(sample_id, "LAR|FIND-EM|TSU-|CMU")) #get rid of other samples run in batches
 
 write.csv(df, "SQLFiles/isotopes.csv")

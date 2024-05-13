@@ -380,6 +380,8 @@ for (file in files) {
 
 df$batch_id <- df$batch_id %>% str_replace(".xlsx", "") #remove .xlsx from end of batch_id
 
+df$participant_id <- df$sample_id %>% substr(0,11) #this will only work when FINDEM sample_ids are properly set up, so take care
+
 #renaming some variables and removing some unneccessary ones
 df <-  df %>% 
   rename(d13C = d13C.cal, # can't have .s in SQL files it will cause all sorts of trouble

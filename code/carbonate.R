@@ -380,8 +380,6 @@ for (file in files) {
 
 df$batch_id <- df$batch_id %>% str_replace(".xlsx", "") #remove .xlsx from end of batch_id
 
-df$participant_id <- df$sample_id %>% substr(0,11) #this will only work when FINDEM sample_ids are properly set up, so take care
-
 #renaming some variables and removing some unneccessary ones
 df <-  df %>% 
   rename(d13C = d13C.cal, # can't have .s in SQL files it will cause all sorts of trouble
@@ -394,5 +392,10 @@ df <-  df %>%
          area_max = Area.max) %>% 
   select(-c(Row)) %>% 
   filter(str_detect(sample_id, "LAR|FIND-EM|TSU-|CMU")) #get rid of other samples run in batches
+
+# these last two commands before write won't work for past datasets so take care. 
+df$participant_id <- df$sample_id %>% substr(0,11) #this will only work when FINDEM sample_ids are properly set up, so take care
+df$arch <- ifelse(grepl("-A|-B", df$sample_id), "mandibular", 
+                   ifelse(grepl("-C|-D", df$sample_id), "maxillary", "")) # gets weird for LAR, don't run for that set
 
 write.csv(df, "SQLFiles/isotopes.csv")
